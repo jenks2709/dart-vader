@@ -9,6 +9,7 @@ from utils.logger import logger
 
 INITIAL_EXTENSIONS = (
     "cogs.general",
+    "cogs.admin",
 )
 
 
