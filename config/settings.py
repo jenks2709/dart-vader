@@ -48,4 +48,4 @@ settings = Settings(
 
 @dataclass(frozen=True)
 class DatabaseConfig:
-    database_path: Path = Path("data/dart_vader.db")
+    database_path: Path = Path("database/dart_vader.db")
