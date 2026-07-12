@@ -2,12 +2,12 @@ import asyncio
 
 import discord
 from discord.ext import commands
-from discord import app_commands
 
-from config.settings import settings
-from config.settings import DatabaseConfig
+from config.settings import DatabaseConfig, settings
+from repositories.event_repository import EventRepository
 from repositories.member_repository import MemberRepository
 from services.database_service import DatabaseService
+from services.event_service import EventService
 from services.member_service import MemberService
 from utils.logger import logger
 
@@ -16,6 +16,7 @@ INITIAL_EXTENSIONS = (
     "cogs.general",
     "cogs.admin",
     "cogs.members",
+    "cogs.events",
 )
 
 
@@ -30,15 +31,26 @@ class DartVaderBot(commands.Bot):
         )
 
         self.database = DatabaseService(DatabaseConfig)
+
         self.member_service: MemberService | None = None
-    async def on_interaction(self, interaction: discord.Interaction) -> None:
+        self.event_service: EventService | None = None
+
+    async def on_interaction(
+        self,
+        interaction: discord.Interaction,
+    ) -> None:
         logger.info(
             "Received interaction: type=%s name=%s user=%s guild=%s",
             interaction.type,
-            interaction.data.get("name") if interaction.data else None,
+            interaction.data.get("name")
+            if interaction.data
+            else None,
             interaction.user.id,
             interaction.guild_id,
         )
+
+        await super().on_interaction(interaction)
+
     async def setup_hook(self) -> None:
         """Initialise services, load extensions, and synchronise commands."""
 
@@ -56,6 +68,14 @@ class DartVaderBot(commands.Bot):
 
         self.member_service = MemberService(
             member_repository
+        )
+
+        event_repository = EventRepository(
+            self.database.connection
+        )
+
+        self.event_service = EventService(
+            event_repository
         )
 
         for extension in INITIAL_EXTENSIONS:
@@ -85,21 +105,31 @@ class DartVaderBot(commands.Bot):
                 ),
             )
 
-            message = "An internal error occurred while running this command."
+            message = (
+                "An internal error occurred while running this command."
+            )
 
             if interaction.response.is_done():
-                await interaction.followup.send(message, ephemeral=True)
+                await interaction.followup.send(
+                    message,
+                    ephemeral=True,
+                )
             else:
-                await interaction.response.send_message(message, ephemeral=True)
-
+                await interaction.response.send_message(
+                    message,
+                    ephemeral=True,
+                )
 
         self.tree.on_error = command_error
+
         if settings.guild_id is not None:
             guild = discord.Object(id=settings.guild_id)
 
             self.tree.copy_global_to(guild=guild)
-            commands_synced = await self.tree.sync(guild=guild)
 
+            commands_synced = await self.tree.sync(
+                guild=guild
+            )
 
             for command in commands_synced:
                 logger.info(
@@ -107,6 +137,7 @@ class DartVaderBot(commands.Bot):
                     command.name,
                     self.application_id,
                 )
+
             logger.info(
                 "Synchronised %d commands to development guild %d",
                 len(commands_synced),
@@ -114,7 +145,7 @@ class DartVaderBot(commands.Bot):
             )
         else:
             commands_synced = await self.tree.sync()
-            
+
             logger.info(
                 "Synchronised %d global commands",
                 len(commands_synced),

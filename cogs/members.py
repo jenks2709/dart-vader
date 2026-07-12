@@ -18,7 +18,7 @@ class Members(commands.Cog):
         self.member_service = member_service
 
     @app_commands.command(
-    name="register-member",
+    name="register",
     description="Register yourself as a Nerf Society member.",
     )
     @app_commands.describe(

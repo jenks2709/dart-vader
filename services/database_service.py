@@ -28,7 +28,25 @@ class DatabaseService:
                 display_name TEXT NOT NULL,
                 joined_at TEXT NOT NULL,
                 UNIQUE(discord_user_id, guild_id)
-            )
+            );
+        """)
+
+        await self.connection.execute("""
+            CREATE TABLE IF NOT EXISTS events (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                guild_id INTEGER NOT NULL,
+                title TEXT NOT NULL,
+                description TEXT,
+                location TEXT,
+                start_time TEXT NOT NULL,
+                end_time TEXT,
+                signup_deadline TEXT,
+                maximum_attendees INTEGER,
+                status TEXT NOT NULL DEFAULT 'scheduled',
+                created_by_discord_id INTEGER NOT NULL,
+                created_at TEXT NOT NULL,
+                updated_at TEXT NOT NULL
+            );
         """)
         await self.connection.commit()
 
