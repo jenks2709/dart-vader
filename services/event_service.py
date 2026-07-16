@@ -190,6 +190,24 @@ class EventService:
         return await self.repository.update(
             event=updated_event,
         )
+    async def register_event_attendance(
+        self,
+        *,
+        guild_id: int,
+        event_id: int,
+        discord_id: int,
+        attended: bool,
+    ) -> None:
+        try:
+            await self.repository.register_attendance(
+                guild_id=guild_id,
+                event_id=event_id,
+                discord_id=discord_id,
+                attended=attended,
+            )
+
+        except ValueError as error:
+            raise InvalidEventError(str(error)) from error
     async def withdraw_from_event(
         self,
         *,

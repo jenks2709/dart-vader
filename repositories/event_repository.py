@@ -73,6 +73,74 @@ class EventRepository:
         await self.database.commit()
 
         return cursor.rowcount > 0
+    async def register_attendance(
+        self,
+        *,
+        guild_id: int,
+        event_id: int,
+        discord_id: int,
+        attended: bool,
+    ) -> None:
+        event = await self.get_by_id(
+            guild_id=guild_id,
+            event_id=event_id,
+        )
+
+        if event is None:
+            raise ValueError("Event not found.")
+
+        cursor = await self.database.execute(
+            """
+            SELECT
+                id,
+                signup_status
+            FROM event_signups
+            WHERE event_id = ?
+            AND discord_id = ?
+            LIMIT 1
+            """,
+            (
+                event_id,
+                discord_id,
+            ),
+        )
+
+        signup = await cursor.fetchone()
+
+        if signup is None:
+            raise ValueError(
+                "This user is not signed up for the event."
+            )
+
+        if signup["signup_status"] == "cancelled":
+            raise ValueError(
+                "Attendance cannot be registered for a cancelled signup."
+            )
+
+        new_status = "attended" if attended else "no_show"
+        updated_at = datetime.now().astimezone()
+
+        cursor = await self.database.execute(
+            """
+            UPDATE event_signups
+            SET
+                signup_status = ?,
+                updated_at = ?
+            WHERE event_id = ?
+            AND discord_id = ?
+            """,
+            (
+                new_status,
+                updated_at.isoformat(),
+                event_id,
+                discord_id,
+            ),
+        )
+
+        await self.database.commit()
+
+        if cursor.rowcount == 0:
+            raise ValueError("Attendance could not be updated.")
     async def get_signup_counts(
         self,
         *,

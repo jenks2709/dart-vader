@@ -738,6 +738,60 @@ class EventsCog(commands.Cog):
             ),
             ephemeral=True,
         )
+    @app_commands.command(
+        name="register-attendance",
+        description="Register whether a member attended an event.",
+    )
+    @app_commands.describe(
+        event_id="The ID of the event.",
+        member="The member whose attendance should be recorded.",
+        attended="True if they attended, False if they were a no-show.",
+    )
+    @app_commands.guild_only()
+    @app_commands.checks.has_permissions(manage_events=True)
+    async def register_attendance(
+        self,
+        interaction: discord.Interaction,
+        event_id: int,
+        member: discord.Member,
+        attended: bool,
+    ) -> None:
+        if interaction.guild_id is None:
+            await interaction.response.send_message(
+                "This command can only be used in a server.",
+                ephemeral=True,
+            )
+            return
+
+        try:
+            event = await self.event_service.get_event(
+                guild_id=interaction.guild_id,
+                event_id=event_id,
+            )
+
+            await self.event_service.register_event_attendance(
+                guild_id=interaction.guild_id,
+                event_id=event_id,
+                discord_id=member.id,
+                attended=attended,
+            )
+
+        except InvalidEventError as error:
+            await interaction.response.send_message(
+                str(error),
+                ephemeral=True,
+            )
+            return
+
+        attendance_text = "attended" if attended else "did not attend"
+
+        await interaction.response.send_message(
+            (
+                f"Recorded that {member.mention} **{attendance_text}** "
+                f"**{event.title}**."
+            ),
+            ephemeral=True,
+        )
 async def setup(bot: commands.Bot) -> None:
     event_service = getattr(bot, "event_service", None)
 
