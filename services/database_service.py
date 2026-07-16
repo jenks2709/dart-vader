@@ -32,6 +32,12 @@ class DatabaseService:
         """)
 
         await self.connection.execute("""
+            CREATE INDEX IF NOT EXISTS idx_event_signups_event_id
+            ON event_signups(event_id)
+            """
+        )
+
+        await self.connection.execute("""
             CREATE TABLE IF NOT EXISTS events (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 guild_id INTEGER NOT NULL,
@@ -48,6 +54,26 @@ class DatabaseService:
                 updated_at TEXT NOT NULL
             );
         """)
+
+        await self.connection.execute("""
+            CREATE TABLE IF NOT EXISTS event_signups (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                event_id INTEGER NOT NULL,
+                discord_id INTEGER NOT NULL,
+                signup_status TEXT NOT NULL DEFAULT 'signed_up',
+                signup_time TEXT NOT NULL,
+                updated_at TEXT NOT NULL,
+                notes TEXT,
+
+                FOREIGN KEY (event_id)
+                    REFERENCES events(id)
+                    ON DELETE CASCADE,
+
+                UNIQUE(event_id, discord_id)
+            );
+        """)
+
+
         await self.connection.commit()
 
     async def close(self) -> None:

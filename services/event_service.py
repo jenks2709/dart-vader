@@ -11,7 +11,30 @@ class InvalidEventError(Exception):
 class EventService:
     def __init__(self, repository: EventRepository) -> None:
         self.repository = repository
+    async def get_event_signup_log(
+        self,
+        *,
+        guild_id: int,
+        event_id: int,
+        include_cancelled: bool = False,
+    ):
+        event = await self.get_event(
+            guild_id=guild_id,
+            event_id=event_id,
+        )
 
+        signups = await self.list_event_signups(
+            guild_id=guild_id,
+            event_id=event_id,
+            include_cancelled=include_cancelled,
+        )
+
+        counts = await self.get_event_signup_counts(
+            guild_id=guild_id,
+            event_id=event_id,
+        )
+
+        return event, signups, counts
     async def list_upcoming_events(
         self,
         *,
@@ -167,6 +190,57 @@ class EventService:
         return await self.repository.update(
             event=updated_event,
         )
+    async def withdraw_from_event(
+        self,
+        *,
+        guild_id: int,
+        event_id: int,
+        discord_id: int,
+    ) -> None:
+        try:
+            withdrawn = await self.repository.withdraw_signup(
+                guild_id=guild_id,
+                event_id=event_id,
+                discord_id=discord_id,
+            )
+
+        except ValueError as error:
+            raise InvalidEventError(str(error)) from error
+
+        if not withdrawn:
+            raise InvalidEventError(
+                "Your signup could not be withdrawn."
+            )
+    async def list_event_signups(
+        self,
+        *,
+        guild_id: int,
+        event_id: int,
+        include_cancelled: bool = False,
+    ) -> list[EventSignup]:
+        try:
+            return await self.repository.list_signups(
+                guild_id=guild_id,
+                event_id=event_id,
+                include_cancelled=include_cancelled,
+            )
+
+        except ValueError as error:
+            raise InvalidEventError(str(error)) from error
+    async def get_event_signup_counts(
+        self,
+        *,
+        guild_id: int,
+        event_id: int,
+    ) -> dict[EventSignupStatus, int]:
+        try:
+            return await self.repository.get_signup_counts(
+                guild_id=guild_id,
+                event_id=event_id,
+            )
+
+        except ValueError as error:
+            raise InvalidEventError(str(error)) from error
     async def create_event(
         self,
         *,
@@ -252,3 +326,20 @@ class EventService:
             )
 
         return event
+    async def sign_up_for_event(
+        self,
+        *,
+        guild_id: int,
+        event_id: int,
+        discord_id: int,
+        notes: str | None = None,
+    ):
+        try:
+            return await self.repository.sign_up(
+                guild_id=guild_id,
+                event_id=event_id,
+                discord_id=discord_id,
+                notes=notes,
+            )
+        except ValueError as error:
+            raise InvalidEventError(str(error)) from error

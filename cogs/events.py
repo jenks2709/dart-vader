@@ -4,6 +4,7 @@ from discord.ext import commands
 
 from services.event_service import EventService, InvalidEventError
 from utils.datetime_parser import parse_event_datetime
+from models.event_signup import EventSignupStatus
 
 
 class EventsCog(commands.Cog):
@@ -14,7 +15,185 @@ class EventsCog(commands.Cog):
     ) -> None:
         self.bot = bot
         self.event_service = event_service
+    @staticmethod
+    def _split_signup_lines(
+        lines: list[str],
+        maximum_length: int = 1000,
+    ) -> list[list[str]]:
+        pages: list[list[str]] = []
+        current_page: list[str] = []
+        current_length = 0
 
+        for line in lines:
+            additional_length = len(line)
+
+            if current_page:
+                additional_length += 2
+
+            if (
+                current_page
+                and current_length + additional_length > maximum_length
+            ):
+                pages.append(current_page)
+                current_page = []
+                current_length = 0
+
+            current_page.append(line)
+            current_length += additional_length
+
+        if current_page:
+            pages.append(current_page)
+
+        return pages
+    @app_commands.command(
+        name="event-signups",
+        description="View the signup log for a society event.",
+    )
+    @app_commands.describe(
+        event_id="The ID of the event.",
+        include_cancelled="Whether cancelled signups should be included.",
+    )
+    @app_commands.guild_only()
+    @app_commands.checks.has_permissions(manage_events=True)
+    async def view_event_signups(
+        self,
+        interaction: discord.Interaction,
+        event_id: int,
+        include_cancelled: bool = False,
+    ) -> None:
+        if interaction.guild_id is None:
+            await interaction.response.send_message(
+                "This command can only be used in a server.",
+                ephemeral=False,
+            )
+            return
+
+        await interaction.response.defer(
+            ephemeral=False,
+        )
+
+        try:
+            event, signups, counts = (
+                await self.event_service.get_event_signup_log(
+                    guild_id=interaction.guild_id,
+                    event_id=event_id,
+                    include_cancelled=include_cancelled,
+                )
+            )
+
+        except InvalidEventError as error:
+            await interaction.followup.send(
+                str(error),
+                ephemeral=True,
+            )
+            return
+
+        embed = discord.Embed(
+            title=f"Signup log: {event.title}",
+            description=f"Event ID: `{event.id}`",
+        )
+
+        signed_up_count = counts[EventSignupStatus.SIGNED_UP]
+        waitlisted_count = counts[EventSignupStatus.WAITLISTED]
+        cancelled_count = counts[EventSignupStatus.CANCELLED]
+        attended_count = counts[EventSignupStatus.ATTENDED]
+        no_show_count = counts[EventSignupStatus.NO_SHOW]
+
+        embed.add_field(
+            name="Summary",
+            value=(
+                f"✅ Signed up: **{signed_up_count}**\n"
+                f"⏳ Waitlisted: **{waitlisted_count}**\n"
+                f"🎟️ Attended: **{attended_count}**\n"
+                f"❌ No-show: **{no_show_count}**\n"
+                f"🚫 Cancelled: **{cancelled_count}**"
+            ),
+            inline=False,
+        )
+
+        if event.maximum_attendees is not None:
+            remaining_places = max(
+                event.maximum_attendees - signed_up_count,
+                0,
+            )
+
+            embed.add_field(
+                name="Capacity",
+                value=(
+                    f"{signed_up_count}/{event.maximum_attendees} places filled\n"
+                    f"{remaining_places} places remaining"
+                ),
+                inline=False,
+            )
+
+        if not signups:
+            embed.add_field(
+                name="Signup entries",
+                value="There are no signups for this event.",
+                inline=False,
+            )
+
+            await interaction.followup.send(
+                embed=embed,
+                
+            )
+            return
+
+        status_icons = {
+            EventSignupStatus.SIGNED_UP: "✅",
+            EventSignupStatus.WAITLISTED: "⏳",
+            EventSignupStatus.CANCELLED: "🚫",
+            EventSignupStatus.ATTENDED: "🎟️",
+            EventSignupStatus.NO_SHOW: "❌",
+        }
+
+        lines: list[str] = []
+
+        for position, signup in enumerate(signups, start=1):
+            icon = status_icons.get(signup.status, "•")
+            signup_timestamp = int(signup.signup_time.timestamp())
+
+            line = (
+                f"{position}. {icon} <@{signup.discord_id}> "
+                f"— {signup.status.value.replace('_', ' ').title()}\n"
+                f"   Signed up <t:{signup_timestamp}:R>"
+            )
+
+            if signup.notes:
+                cleaned_notes = signup.notes.replace("\n", " ").strip()
+
+                if len(cleaned_notes) > 100:
+                    cleaned_notes = f"{cleaned_notes[:97]}..."
+
+                line += f"\n   Notes: {cleaned_notes}"
+
+            lines.append(line)
+
+        pages = self._split_signup_lines(lines)
+
+        for page_number, page_lines in enumerate(pages, start=1):
+            page_embed = embed.copy()
+
+            page_embed.add_field(
+                name=(
+                    "Signup entries"
+                    if len(pages) == 1
+                    else f"Signup entries — page {page_number}/{len(pages)}"
+                ),
+                value="\n\n".join(page_lines),
+                inline=False,
+            )
+
+            if page_number == 1:
+                await interaction.followup.send(
+                    embed=page_embed,
+                    ephemeral=True,
+                )
+            else:
+                await interaction.followup.send(
+                    embed=page_embed,
+                    ephemeral=True,
+                )
     @app_commands.command(
         name="events",
         description="View upcoming society events.",
@@ -61,7 +240,12 @@ class EventsCog(commands.Cog):
                 details.append(
                     f"👥 Maximum attendees: {event.maximum_attendees}"
                 )
-
+            details.append(
+                f"Sign up: `/signup-event event_id:{event.id}`"
+            )
+            details.append(
+                f"🚫 Withdraw: `/withdraw-event event_id:{event.id}`"
+            )
             if event.description:
                 details.append(event.description)
 
@@ -449,6 +633,108 @@ class EventsCog(commands.Cog):
             (
                 f"Event **{event.title}** "
                 f"(`{event.id}`) was deleted successfully."
+            ),
+            ephemeral=True,
+        )
+    @app_commands.command(
+        name="signup-event",
+        description="Sign up for a society event.",
+    )
+    @app_commands.describe(
+        event_id="The ID of the event you want to attend.",
+        notes="Optional information about your signup.",
+    )
+    @app_commands.guild_only()
+    async def signup_event(
+        self,
+        interaction: discord.Interaction,
+        event_id: int,
+        notes: str | None = None,
+    ) -> None:
+        if interaction.guild_id is None:
+            await interaction.response.send_message(
+                "This command can only be used in a server.",
+                ephemeral=True,
+            )
+            return
+
+        try:
+            signup = await self.event_service.sign_up_for_event(
+                guild_id=interaction.guild_id,
+                event_id=event_id,
+                discord_id=interaction.user.id,
+                notes=notes,
+            )
+
+        except InvalidEventError as error:
+            await interaction.response.send_message(
+                str(error),
+                ephemeral=True,
+            )
+            return
+
+        except ValueError as error:
+            await interaction.response.send_message(
+                str(error),
+                ephemeral=True,
+            )
+            return
+
+        if signup.status.value == "waitlisted":
+            message = (
+                "This event is currently full. "
+                "You have been added to the waitlist."
+            )
+        else:
+            message = "You have successfully signed up for the event."
+
+        await interaction.response.send_message(
+            message,
+            ephemeral=True,
+        )
+    @app_commands.command(
+        name="withdraw-event",
+        description="Withdraw your signup from a society event.",
+    )
+    @app_commands.describe(
+        event_id="The ID of the event you want to withdraw from.",
+    )
+    @app_commands.guild_only()
+    async def withdraw_event(
+        self,
+        interaction: discord.Interaction,
+        event_id: int,
+    ) -> None:
+        if interaction.guild_id is None:
+            await interaction.response.send_message(
+                "This command can only be used in a server.",
+                ephemeral=True,
+            )
+            return
+
+        try:
+            event = await self.event_service.get_event(
+                guild_id=interaction.guild_id,
+                event_id=event_id,
+            )
+
+            await self.event_service.withdraw_from_event(
+                guild_id=interaction.guild_id,
+                event_id=event_id,
+                discord_id=interaction.user.id,
+            )
+
+        except InvalidEventError as error:
+            await interaction.response.send_message(
+                str(error),
+                ephemeral=True,
+            )
+            return
+
+        await interaction.response.send_message(
+            (
+                f"You have withdrawn from **{event.title}** "
+                f"(`{event.id}`)."
             ),
             ephemeral=True,
         )
