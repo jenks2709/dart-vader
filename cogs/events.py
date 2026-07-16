@@ -792,6 +792,441 @@ class EventsCog(commands.Cog):
             ),
             ephemeral=True,
         )
+    @app_commands.command(
+        name="announce-event",
+        description="Send an event announcement to a specific channel.",
+    )
+    @app_commands.describe(
+        event_id="The ID of the event to announce.",
+        channel="The channel where the announcement should be sent.",
+        ping_everyone="Whether @everyone should be notified.",
+        message="Optional additional announcement message.",
+    )
+    @app_commands.guild_only()
+    @app_commands.checks.has_permissions(manage_events=True)
+    async def announce_event(
+        self,
+        interaction: discord.Interaction,
+        event_id: int,
+        channel: discord.TextChannel,
+        ping_everyone: bool = False,
+        message: str | None = None,
+    ) -> None:
+        if interaction.guild_id is None:
+            await interaction.response.send_message(
+                "This command can only be used in a server.",
+                ephemeral=True,
+            )
+            return
+
+        if channel.guild.id != interaction.guild_id:
+            await interaction.response.send_message(
+                "You must select a channel from this server.",
+                ephemeral=True,
+            )
+            return
+
+        try:
+            event = await self.event_service.get_event(
+                guild_id=interaction.guild_id,
+                event_id=event_id,
+            )
+
+        except InvalidEventError as error:
+            await interaction.response.send_message(
+                str(error),
+                ephemeral=True,
+            )
+            return
+
+        bot_member = channel.guild.me
+
+        if bot_member is None:
+            await interaction.response.send_message(
+                "I could not check my permissions in that channel.",
+                ephemeral=True,
+            )
+            return
+
+        permissions = channel.permissions_for(bot_member)
+
+        if not permissions.view_channel:
+            await interaction.response.send_message(
+                "I cannot view the selected channel.",
+                ephemeral=True,
+            )
+            return
+
+        if not permissions.send_messages:
+            await interaction.response.send_message(
+                "I do not have permission to send messages in that channel.",
+                ephemeral=True,
+            )
+            return
+
+        if not permissions.embed_links:
+            await interaction.response.send_message(
+                "I need the **Embed Links** permission in that channel.",
+                ephemeral=True,
+            )
+            return
+
+        if ping_everyone and not permissions.mention_everyone:
+            await interaction.response.send_message(
+                (
+                    "I need the **Mention Everyone** permission "
+                    "to notify @everyone."
+                ),
+                ephemeral=True,
+            )
+            return
+
+        start_timestamp = int(event.start_time.timestamp())
+
+        embed = discord.Embed(
+            title=event.title,
+            description=(
+                event.description
+                if event.description
+                else "A new society event has been announced."
+            ),
+        )
+
+        embed.add_field(
+            name="Start time",
+            value=(
+                f"<t:{start_timestamp}:F>\n"
+                f"<t:{start_timestamp}:R>"
+            ),
+            inline=False,
+        )
+
+        embed.add_field(
+            name="Location",
+            value=event.location or "No location specified.",
+            inline=False,
+        )
+
+        if event.end_time is not None:
+            end_timestamp = int(event.end_time.timestamp())
+
+            embed.add_field(
+                name="End time",
+                value=f"<t:{end_timestamp}:F>",
+                inline=False,
+            )
+
+        if event.signup_deadline is not None:
+            deadline_timestamp = int(
+                event.signup_deadline.timestamp()
+            )
+
+            embed.add_field(
+                name="Signup deadline",
+                value=f"<t:{deadline_timestamp}:F>",
+                inline=False,
+            )
+
+        if event.maximum_attendees is not None:
+            embed.add_field(
+                name="Maximum attendees",
+                value=str(event.maximum_attendees),
+                inline=True,
+            )
+
+        embed.add_field(
+            name="Event ID",
+            value=f"`{event.id}`",
+            inline=True,
+        )
+
+        embed.add_field(
+            name="Sign up",
+            value=f"`/signup-event event_id:{event.id}`",
+            inline=False,
+        )
+
+        embed.add_field(
+            name="Withdraw",
+            value=f"`/withdraw-event event_id:{event.id}`",
+            inline=False,
+        )
+
+        embed.set_footer(
+            text=(
+                "Announcement requested by "
+                f"{interaction.user.display_name}"
+            )
+        )
+
+        content_parts: list[str] = []
+
+        if ping_everyone:
+            content_parts.append("@everyone")
+
+        if message:
+            content_parts.append(message)
+
+        announcement_content = "\n".join(content_parts) or None
+
+        try:
+            announcement = await channel.send(
+                content=announcement_content,
+                embed=embed,
+                allowed_mentions=discord.AllowedMentions(
+                    everyone=ping_everyone,
+                    users=False,
+                    roles=False,
+                    replied_user=False,
+                ),
+            )
+
+        except discord.Forbidden:
+            await interaction.response.send_message(
+                (
+                    "Discord blocked the announcement. "
+                    "Check my permissions in the selected channel."
+                ),
+                ephemeral=True,
+            )
+            return
+
+        except discord.HTTPException:
+            await interaction.response.send_message(
+                "Discord could not send the announcement.",
+                ephemeral=True,
+            )
+            return
+
+        await interaction.response.send_message(
+            (
+                f"Announcement sent successfully in {channel.mention}.\n"
+                f"[View announcement]({announcement.jump_url})"
+            ),
+            ephemeral=True,
+        )
+    @app_commands.command(
+        name="remind-event",
+        description="Send a reminder for an upcoming event.",
+    )
+    @app_commands.describe(
+        event_id="The ID of the event to remind members about.",
+        channel="The channel where the reminder should be sent.",
+        ping_everyone="Whether @everyone should be notified.",
+        message="Optional additional reminder message.",
+    )
+    @app_commands.guild_only()
+    @app_commands.checks.has_permissions(manage_events=True)
+    async def remind_event(
+        self,
+        interaction: discord.Interaction,
+        event_id: int,
+        channel: discord.TextChannel,
+        ping_everyone: bool = False,
+        message: str | None = None,
+    ) -> None:
+        if interaction.guild_id is None:
+            await interaction.response.send_message(
+                "This command can only be used in a server.",
+                ephemeral=True,
+            )
+            return
+
+        if channel.guild.id != interaction.guild_id:
+            await interaction.response.send_message(
+                "You must select a channel from this server.",
+                ephemeral=True,
+            )
+            return
+
+        try:
+            event = await self.event_service.get_event(
+                guild_id=interaction.guild_id,
+                event_id=event_id,
+            )
+
+        except InvalidEventError as error:
+            await interaction.response.send_message(
+                str(error),
+                ephemeral=True,
+            )
+            return
+
+        now = discord.utils.utcnow()
+
+        if event.start_time <= now:
+            await interaction.response.send_message(
+                "You cannot send a reminder for an event that has already started.",
+                ephemeral=True,
+            )
+            return
+
+        bot_member = channel.guild.me
+
+        if bot_member is None:
+            await interaction.response.send_message(
+                "I could not check my permissions in that channel.",
+                ephemeral=True,
+            )
+            return
+
+        permissions = channel.permissions_for(bot_member)
+
+        if not permissions.view_channel:
+            await interaction.response.send_message(
+                "I cannot view the selected channel.",
+                ephemeral=True,
+            )
+            return
+
+        if not permissions.send_messages:
+            await interaction.response.send_message(
+                "I do not have permission to send messages in that channel.",
+                ephemeral=True,
+            )
+            return
+
+        if not permissions.embed_links:
+            await interaction.response.send_message(
+                "I need the **Embed Links** permission in that channel.",
+                ephemeral=True,
+            )
+            return
+
+        if ping_everyone and not permissions.mention_everyone:
+            await interaction.response.send_message(
+                (
+                    "I need the **Mention Everyone** permission "
+                    "to notify @everyone."
+                ),
+                ephemeral=True,
+            )
+            return
+
+        start_timestamp = int(event.start_time.timestamp())
+
+        embed = discord.Embed(
+            title=f"Reminder: {event.title}",
+            description=(
+                event.description
+                if event.description
+                else "This event is coming up soon."
+            ),
+        )
+
+        embed.add_field(
+            name="Starts",
+            value=(
+                f"<t:{start_timestamp}:F>\n"
+                f"<t:{start_timestamp}:R>"
+            ),
+            inline=False,
+        )
+
+        embed.add_field(
+            name="Location",
+            value=event.location or "No location specified.",
+            inline=False,
+        )
+
+        if event.end_time is not None:
+            end_timestamp = int(event.end_time.timestamp())
+
+            embed.add_field(
+                name="Ends",
+                value=f"<t:{end_timestamp}:F>",
+                inline=False,
+            )
+
+        if event.signup_deadline is not None:
+            deadline_timestamp = int(
+                event.signup_deadline.timestamp()
+            )
+
+            embed.add_field(
+                name="Signup deadline",
+                value=(
+                    f"<t:{deadline_timestamp}:F>\n"
+                    f"<t:{deadline_timestamp}:R>"
+                ),
+                inline=False,
+            )
+
+        if event.maximum_attendees is not None:
+            embed.add_field(
+                name="Maximum attendees",
+                value=str(event.maximum_attendees),
+                inline=True,
+            )
+
+        embed.add_field(
+            name="Event ID",
+            value=f"`{event.id}`",
+            inline=True,
+        )
+
+        embed.add_field(
+            name="Signup commands",
+            value=(
+                f"✅ `/signup-event event_id:{event.id}`\n"
+                f"🚫 `/withdraw-event event_id:{event.id}`"
+            ),
+            inline=False,
+        )
+
+        embed.set_footer(
+            text=(
+                "Reminder requested by "
+                f"{interaction.user.display_name}"
+            )
+        )
+
+        content_parts: list[str] = []
+
+        if ping_everyone:
+            content_parts.append("@everyone")
+
+        if message:
+            content_parts.append(message)
+
+        reminder_content = "\n".join(content_parts) or None
+
+        try:
+            reminder = await channel.send(
+                content=reminder_content,
+                embed=embed,
+                allowed_mentions=discord.AllowedMentions(
+                    everyone=ping_everyone,
+                    users=False,
+                    roles=False,
+                    replied_user=False,
+                ),
+            )
+
+        except discord.Forbidden:
+            await interaction.response.send_message(
+                (
+                    "Discord blocked the reminder. "
+                    "Check my permissions in the selected channel."
+                ),
+                ephemeral=True,
+            )
+            return
+
+        except discord.HTTPException:
+            await interaction.response.send_message(
+                "Discord could not send the event reminder.",
+                ephemeral=True,
+            )
+            return
+
+        await interaction.response.send_message(
+            (
+                f"Reminder sent successfully in {channel.mention}.\n"
+                f"[View reminder]({reminder.jump_url})"
+            ),
+            ephemeral=True,
+        )
 async def setup(bot: commands.Bot) -> None:
     event_service = getattr(bot, "event_service", None)
 
