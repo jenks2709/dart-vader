@@ -13,8 +13,7 @@ class EventSignupStatus(Enum):
 
 @dataclass
 class EventSignup:
-    id: int
-    event_id: int
+    event_id: str
     discord_id: int
     status: EventSignupStatus
     signup_time: datetime

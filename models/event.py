@@ -12,8 +12,8 @@ class EventStatus(str, Enum):
 
 @dataclass
 class Event:
-    id: str
     guild_id: int
+    event_id: str
     title: str
     description: str
     location: str

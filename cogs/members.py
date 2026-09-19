@@ -1,11 +1,13 @@
 import discord
 from discord import app_commands
 from discord.ext import commands
+from config.settings import settings
 
 from services.member_service import (
     MemberAlreadyRegisteredError,
     MemberService,
 )
+
 
 
 class Members(commands.Cog):
@@ -17,6 +19,33 @@ class Members(commands.Cog):
         self.bot = bot
         self.member_service = member_service
 
+
+    async def give_member_role(self, member: discord.Member, reason: str) -> bool:
+        role_id = settings.member_role_id
+        if role_id is None:
+            logger.error("MEMBER_ROLE_ID is not set in .env")
+            return False
+
+        role = member.guild.get_role(role_id)
+        print(role)
+        if role is None:
+            logger.error("Role %s not found in guild %s", role_id, member.guild.id)
+            return False
+
+        if role in member.roles:
+            return True  # already has it
+
+        try:
+            await member.add_roles(role, reason=reason)
+        except discord.Forbidden:
+            logger.error("Missing permission or role hierarchy problem adding role %s", role_id)
+            return False
+        except discord.HTTPException:
+            logger.exception("Failed to add role %s", role_id)
+            return False
+
+        return True
+    
     @app_commands.command(
     name="register",
     description="Register yourself as a Nerf Society member.",
@@ -68,12 +97,21 @@ class Members(commands.Cog):
                 ephemeral=True,
             )
             return
+        
+        role_added = await self.give_member_role(interaction.user, reason="Completed registration")
+
+        if role_added:
+            await interaction.followup.send("You're registered and have been given the Member role.", ephemeral=True)
+        else:
+            await interaction.response.send_message(
+                "You're registered, but I couldn't assign the Member role. Please contact an admin.",
+                ephemeral=True,
+            )
 
         if interaction.guild.owner_id == interaction.user.id:
             await interaction.followup.send(
                 (
-                    f"You have been registered. "
-                    "Discord does not allow bots to change the server owner's "
+                    f"Discord does not allow bots to change the server owner's "
                     "nickname, so you will need to update it manually."
                 ),
                 ephemeral=True,
@@ -90,8 +128,7 @@ class Members(commands.Cog):
         except discord.Forbidden:
             await interaction.followup.send(
                 (
-                    f"You have been registered, "
-                    "but I do not have permission to change your nickname."
+                    f"I do not have permission to change your nickname."
                 ),
                 ephemeral=True,
             )
@@ -100,8 +137,7 @@ class Members(commands.Cog):
         except discord.HTTPException:
             await interaction.followup.send(
                 (
-                    f"You have been registered, "
-                    "but Discord could not update your nickname."
+                    f"Discord could not update your nickname."
                 ),
                 ephemeral=True,
             )
@@ -109,11 +145,13 @@ class Members(commands.Cog):
 
         await interaction.followup.send(
             (
-                f"You have been registered "
-                "and your nickname has been updated."
+                f"Your nickname has been updated."
             ),
             ephemeral=True,
         )
+
+        
+
 
     @register.error
     async def register_error(

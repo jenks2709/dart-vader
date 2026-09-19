@@ -58,7 +58,7 @@ class General(commands.Cog):
             description=(
                 "Dart Vader supports the day-to-day administration "
                 "of the Nerf society."
-                "Events, attendance, roles, reminders and general "
+                " Events, attendance, roles, reminders and general "
                 "society administration."
             ),
         )

@@ -15,7 +15,7 @@ class EventService:
         self,
         *,
         guild_id: int,
-        event_id: int,
+        event_id: str,
         include_cancelled: bool = False,
     ):
         event = await self.get_event(
@@ -54,12 +54,8 @@ class EventService:
         self,
         *,
         guild_id: int,
-        event_id: int,
+        event_id: str,
     ) -> Event:
-        if event_id <= 0:
-            raise InvalidEventError(
-                "The event ID must be greater than zero."
-            )
 
         event = await self.repository.get_by_id(
             guild_id=guild_id,
@@ -194,7 +190,7 @@ class EventService:
         self,
         *,
         guild_id: int,
-        event_id: int,
+        event_id: str,
         discord_id: int,
         attended: bool,
     ) -> None:
@@ -212,7 +208,7 @@ class EventService:
         self,
         *,
         guild_id: int,
-        event_id: int,
+        event_id: str,
         discord_id: int,
     ) -> None:
         try:
@@ -233,7 +229,7 @@ class EventService:
         self,
         *,
         guild_id: int,
-        event_id: int,
+        event_id: str,
         include_cancelled: bool = False,
     ) -> list[EventSignup]:
         try:
@@ -249,7 +245,7 @@ class EventService:
         self,
         *,
         guild_id: int,
-        event_id: int,
+        event_id: str,
     ) -> dict[EventSignupStatus, int]:
         try:
             return await self.repository.get_signup_counts(
@@ -318,7 +314,7 @@ class EventService:
         self,
         *,
         guild_id: int,
-        event_id: int,
+        event_id: str,
     ) -> Event:
         if event_id <= 0:
             raise InvalidEventError(
@@ -350,7 +346,7 @@ class EventService:
         self,
         *,
         guild_id: int,
-        event_id: int,
+        event_id: str,
         discord_id: int,
         notes: str | None = None,
     ):
