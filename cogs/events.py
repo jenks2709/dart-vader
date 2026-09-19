@@ -59,7 +59,7 @@ class EventsCog(commands.Cog):
     async def view_event_signups(
         self,
         interaction: discord.Interaction,
-        event_id: int,
+        event_id: str,
         include_cancelled: bool = False,
     ) -> None:
         if interaction.guild_id is None:
@@ -91,7 +91,7 @@ class EventsCog(commands.Cog):
 
         embed = discord.Embed(
             title=f"Signup log: {event.title}",
-            description=f"Event ID: `{event.id}`",
+            description=f"Event ID: `{event.event_id}`",
         )
 
         signed_up_count = counts[EventSignupStatus.SIGNED_UP]
@@ -234,7 +234,7 @@ class EventsCog(commands.Cog):
             details = [
                 f"📅 <t:{start_timestamp}:F>",
                 f"📍 {event.location}",
-                f"🆔 Event ID: `{event.id}`",
+                f"🆔 Event ID: `{event.event_id}`",
             ]
 
             if event.maximum_attendees is not None:
@@ -242,10 +242,10 @@ class EventsCog(commands.Cog):
                     f"👥 Maximum attendees: {event.maximum_attendees}"
                 )
             details.append(
-                f"Sign up: `/signup-event event_id:{event.id}`"
+                f"Sign up: `/signup-event event_id:{event.event_id}`"
             )
             details.append(
-                f"🚫 Withdraw: `/withdraw-event event_id:{event.id}`"
+                f"🚫 Withdraw: `/withdraw-event event_id:{event.event_id}`"
             )
             if event.description:
                 details.append(event.description)
@@ -353,7 +353,7 @@ class EventsCog(commands.Cog):
     async def edit_event(
         self,
         interaction: discord.Interaction,
-        event_id: int,
+        event_id: str,
         title: str | None = None,
         description: str | None = None,
         location: str | None = None,
@@ -441,7 +441,7 @@ class EventsCog(commands.Cog):
 
         embed.add_field(
             name="Event ID",
-            value=f"`{event.id}`",
+            value=f"`{event.event_id}`",
             inline=True,
         )
 
@@ -499,7 +499,7 @@ class EventsCog(commands.Cog):
     async def view_event(
         self,
         interaction: discord.Interaction,
-        event_id: int,
+        event_id: str,
     ) -> None:
         if interaction.guild_id is None:
             await interaction.response.send_message(
@@ -579,7 +579,7 @@ class EventsCog(commands.Cog):
 
         embed.add_field(
             name="Event ID",
-            value=f"`{event.id}`",
+            value=f"`{event.event_id}`",
             inline=True,
         )
 
@@ -604,7 +604,7 @@ class EventsCog(commands.Cog):
     async def delete_event(
         self,
         interaction: discord.Interaction,
-        event_id: int,
+        event_id: str,
         confirm: bool,
     ) -> None:
         if interaction.guild_id is None:
@@ -638,7 +638,7 @@ class EventsCog(commands.Cog):
         await interaction.response.send_message(
             (
                 f"Event **{event.title}** "
-                f"(`{event.id}`) was deleted successfully."
+                f"(`{event.event_id}`) was deleted successfully."
             ),
             ephemeral=True,
         )
@@ -655,7 +655,7 @@ class EventsCog(commands.Cog):
     async def signup_event(
         self,
         interaction: discord.Interaction,
-        event_id: int,
+        event_id: str,
         notes: str | None = None,
     ) -> None:
         if interaction.guild_id is None:
@@ -710,7 +710,7 @@ class EventsCog(commands.Cog):
     async def withdraw_event(
         self,
         interaction: discord.Interaction,
-        event_id: int,
+        event_id: str,
     ) -> None:
         if interaction.guild_id is None:
             await interaction.response.send_message(
@@ -741,7 +741,6 @@ class EventsCog(commands.Cog):
         await interaction.response.send_message(
             (
                 f"You have withdrawn from **{event.title}** "
-                f"(`{event.id}`)."
             ),
             ephemeral=True,
         )
@@ -760,7 +759,7 @@ class EventsCog(commands.Cog):
     async def register_attendance(
         self,
         interaction: discord.Interaction,
-        event_id: int,
+        event_id: str,
         member: discord.Member,
         attended: bool,
     ) -> None:
@@ -816,7 +815,7 @@ class EventsCog(commands.Cog):
     async def announce_event(
         self,
         interaction: discord.Interaction,
-        event_id: int,
+        event_id: str,
         channel: discord.TextChannel,
         ping_everyone: bool = False,
         message: str | None = None,
@@ -945,19 +944,19 @@ class EventsCog(commands.Cog):
 
         embed.add_field(
             name="Event ID",
-            value=f"`{event.id}`",
+            value=f"`{event.event_id}`",
             inline=True,
         )
 
         embed.add_field(
             name="Sign up",
-            value=f"`/signup-event event_id:{event.id}`",
+            value=f"`/signup-event event_id:{event.event_id}`",
             inline=False,
         )
 
         embed.add_field(
             name="Withdraw",
-            value=f"`/withdraw-event event_id:{event.id}`",
+            value=f"`/withdraw-event event_id:{event.event_id}`",
             inline=False,
         )
 
@@ -1030,7 +1029,7 @@ class EventsCog(commands.Cog):
     async def remind_event(
         self,
         interaction: discord.Interaction,
-        event_id: int,
+        event_id: str,
         channel: discord.TextChannel,
         ping_everyone: bool = False,
         message: str | None = None,
@@ -1171,15 +1170,15 @@ class EventsCog(commands.Cog):
 
         embed.add_field(
             name="Event ID",
-            value=f"`{event.id}`",
+            value=f"`{event.event_id}`",
             inline=True,
         )
 
         embed.add_field(
             name="Signup commands",
             value=(
-                f"✅ `/signup-event event_id:{event.id}`\n"
-                f"🚫 `/withdraw-event event_id:{event.id}`"
+                f"✅ `/signup-event event_id:{event.event_id}`\n"
+                f"🚫 `/withdraw-event event_id:{event.event_id}`"
             ),
             inline=False,
         )

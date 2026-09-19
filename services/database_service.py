@@ -34,8 +34,7 @@ class DatabaseService:
 
         await self.connection.execute("""
             CREATE TABLE IF NOT EXISTS event_signups (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                event_id INTEGER NOT NULL,
+                event_id TEXT NOT NULL UNIQUE,
                 discord_id INTEGER NOT NULL,
                 signup_status TEXT NOT NULL DEFAULT 'signed_up',
                 signup_time TEXT NOT NULL,
@@ -43,7 +42,7 @@ class DatabaseService:
                 notes TEXT,
 
                 FOREIGN KEY (event_id)
-                    REFERENCES events(id)
+                    REFERENCES events(event_id)
                     ON DELETE CASCADE,
 
                 UNIQUE(event_id, discord_id)
@@ -59,8 +58,8 @@ class DatabaseService:
 
         await self.connection.execute("""
             CREATE TABLE IF NOT EXISTS events (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
                 guild_id INTEGER NOT NULL,
+                event_id TEXT NOT NULL UNIQUE,
                 title TEXT NOT NULL,
                 description TEXT,
                 location TEXT,

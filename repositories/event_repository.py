@@ -12,7 +12,7 @@ class EventRepository:
         self,
         *,
         guild_id: int,
-        event_id: int,
+        event_id: str,
         discord_id: int,
     ) -> bool:
         event = await self.get_by_id(
@@ -26,7 +26,6 @@ class EventRepository:
         cursor = await self.database.execute(
             """
             SELECT
-                id,
                 signup_status
             FROM event_signups
             WHERE event_id = ?
@@ -77,7 +76,7 @@ class EventRepository:
         self,
         *,
         guild_id: int,
-        event_id: int,
+        event_id: str,
         discord_id: int,
         attended: bool,
     ) -> None:
@@ -92,7 +91,6 @@ class EventRepository:
         cursor = await self.database.execute(
             """
             SELECT
-                id,
                 signup_status
             FROM event_signups
             WHERE event_id = ?
@@ -145,7 +143,7 @@ class EventRepository:
         self,
         *,
         guild_id: int,
-        event_id: int,
+        event_id: str,
     ) -> dict[EventSignupStatus, int]:
         event = await self.get_by_id(
             guild_id=guild_id,
@@ -184,6 +182,7 @@ class EventRepository:
         self,
         *,
         guild_id: int,
+        event_id: str,
         title: str,
         description: str,
         location: str,
@@ -201,6 +200,7 @@ class EventRepository:
             """
             INSERT INTO events (
                 guild_id,
+                event_id,
                 title,
                 description,
                 location,
@@ -213,10 +213,11 @@ class EventRepository:
                 created_at,
                 updated_at
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 guild_id,
+                event_id,
                 title,
                 description,
                 location,
@@ -234,7 +235,7 @@ class EventRepository:
         await self.database.commit()
 
         return Event(
-            id=cursor.lastrowid,
+            event_id=event_id,
             guild_id=guild_id,
             title=title,
             description=description,
@@ -256,8 +257,8 @@ class EventRepository:
         cursor = await self.database.execute(
             """
             SELECT
-                id,
                 guild_id,
+                event_id,
                 title,
                 description,
                 location,
@@ -288,8 +289,8 @@ class EventRepository:
 
         return [
             Event(
-                id=row["id"],
                 guild_id=row["guild_id"],
+                event_id=row["event_id"],
                 title=row["title"],
                 description=row["description"],
                 location=row["location"],
@@ -316,13 +317,13 @@ class EventRepository:
         self,
         *,
         guild_id: int,
-        event_id: int,
+        event_id: str,
     ) -> Event | None:
         cursor = await self.database.execute(
             """
             SELECT
-                id,
                 guild_id,
+                event_id,
                 title,
                 description,
                 location,
@@ -336,7 +337,7 @@ class EventRepository:
                 updated_at
             FROM events
             WHERE guild_id = ?
-            AND id = ?
+            AND event_id = ?
             LIMIT 1
             """,
             (
@@ -345,14 +346,15 @@ class EventRepository:
             ),
         )
 
+        
         row = await cursor.fetchone()
 
         if row is None:
             return None
 
         return Event(
-            id=row["id"],
             guild_id=row["guild_id"],
+            event_id=row["event_id"],
             title=row["title"],
             description=row["description"],
             location=row["location"],
@@ -394,7 +396,7 @@ class EventRepository:
                 status = ?,
                 updated_at = ?
             WHERE guild_id = ?
-            AND id = ?
+            AND event_id = ?
             """,
             (
                 event.title,
@@ -415,15 +417,15 @@ class EventRepository:
                 event.status.value,
                 updated_at.isoformat(),
                 event.guild_id,
-                event.id,
+                event.event_idid,
             ),
         )
 
         await self.database.commit()
 
         return Event(
-            id=event.id,
             guild_id=event.guild_id,
+            event_id=event.event_id,
             title=event.title,
             description=event.description,
             location=event.location,
@@ -440,13 +442,13 @@ class EventRepository:
         self,
         *,
         guild_id: int,
-        event_id: int,
+        event_id: str,
     ) -> bool:
         cursor = await self.database.execute(
             """
             DELETE FROM events
             WHERE guild_id = ?
-            AND id = ?
+            AND event_id = ?
             """,
             (
                 guild_id,
@@ -461,7 +463,7 @@ class EventRepository:
         self,
         *,
         guild_id: int,
-        event_id: int,
+        event_id: str,
         discord_id: int,
         notes: str | None = None,
     ) -> EventSignup:
@@ -487,7 +489,6 @@ class EventRepository:
         cursor = await self.database.execute(
             """
             SELECT
-                id,
                 signup_status
             FROM event_signups
             WHERE event_id = ?
@@ -584,7 +585,6 @@ class EventRepository:
         cursor = await self.database.execute(
             """
             SELECT
-                id,
                 event_id,
                 discord_id,
                 signup_status,
@@ -608,7 +608,6 @@ class EventRepository:
             raise RuntimeError("Failed to retrieve signup after creation.")
 
         return EventSignup(
-            id=row["id"],
             event_id=row["event_id"],
             discord_id=row["discord_id"],
             status=EventSignupStatus(row["signup_status"]),
@@ -620,7 +619,7 @@ class EventRepository:
         self,
         *,
         guild_id: int,
-        event_id: int,
+        event_id: str,
         include_cancelled: bool = False,
     ) -> list[EventSignup]:
         event = await self.get_by_id(
@@ -634,7 +633,6 @@ class EventRepository:
         if include_cancelled:
             query = """
                 SELECT
-                    id,
                     event_id,
                     discord_id,
                     signup_status,
@@ -660,7 +658,6 @@ class EventRepository:
         else:
             query = """
                 SELECT
-                    id,
                     event_id,
                     discord_id,
                     signup_status,
@@ -695,7 +692,6 @@ class EventRepository:
 
         return [
             EventSignup(
-                id=row["id"],
                 event_id=row["event_id"],
                 discord_id=row["discord_id"],
                 status=EventSignupStatus(row["signup_status"]),
