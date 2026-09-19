@@ -5,7 +5,7 @@ from discord.ext import commands
 from services.event_service import EventService, InvalidEventError
 from utils.datetime_parser import parse_event_datetime
 from models.event_signup import EventSignupStatus
-
+from utils.checks import is_member, is_admin
 
 class EventsCog(commands.Cog):
     def __init__(
@@ -54,6 +54,7 @@ class EventsCog(commands.Cog):
         include_cancelled="Whether cancelled signups should be included.",
     )
     @app_commands.guild_only()
+    @is_admin()
     @app_commands.checks.has_permissions(manage_events=True)
     async def view_event_signups(
         self,
@@ -263,10 +264,12 @@ class EventsCog(commands.Cog):
         description="Create a new society event.",
     )
     @app_commands.guild_only()
+    @is_admin()
     @app_commands.checks.has_permissions(manage_events=True)
     async def create_event(
         self,
         interaction: discord.Interaction,
+        event_id: str,
         title: str,
         start_time: str,
         location: str,
@@ -298,6 +301,7 @@ class EventsCog(commands.Cog):
             event = await self.event_service.create_event(
                 guild_id=interaction.guild_id,
                 title=title,
+                event_id=event_id,
                 description=description,
                 location=location,
                 start_time=parsed_start,
@@ -329,6 +333,7 @@ class EventsCog(commands.Cog):
         name="edit-event",
         description="Edit an existing society event.",
     )
+    @is_admin()
     @app_commands.describe(
         event_id="The ID of the event to edit.",
         title="A new title for the event.",
@@ -589,6 +594,7 @@ class EventsCog(commands.Cog):
         name="delete-event",
         description="Delete an existing society event.",
     )
+    @is_admin()
     @app_commands.describe(
         event_id="The ID of the event to delete.",
         confirm="Confirm that the event should be permanently deleted.",
@@ -645,6 +651,7 @@ class EventsCog(commands.Cog):
         notes="Optional information about your signup.",
     )
     @app_commands.guild_only()
+    @is_member()
     async def signup_event(
         self,
         interaction: discord.Interaction,
@@ -742,6 +749,7 @@ class EventsCog(commands.Cog):
         name="register-attendance",
         description="Register whether a member attended an event.",
     )
+    @is_admin()
     @app_commands.describe(
         event_id="The ID of the event.",
         member="The member whose attendance should be recorded.",
@@ -796,6 +804,7 @@ class EventsCog(commands.Cog):
         name="announce-event",
         description="Send an event announcement to a specific channel.",
     )
+    @is_admin()
     @app_commands.describe(
         event_id="The ID of the event to announce.",
         channel="The channel where the announcement should be sent.",
@@ -1009,6 +1018,7 @@ class EventsCog(commands.Cog):
         name="remind-event",
         description="Send a reminder for an upcoming event.",
     )
+    @is_admin()
     @app_commands.describe(
         event_id="The ID of the event to remind members about.",
         channel="The channel where the reminder should be sent.",
@@ -1227,6 +1237,21 @@ class EventsCog(commands.Cog):
             ),
             ephemeral=True,
         )
+    async def cog_app_command_error(
+        self,
+        interaction: discord.Interaction,
+        error: app_commands.AppCommandError,
+    ) -> None:
+        if isinstance(error, app_commands.MissingRole):
+            await interaction.response.send_message(
+                "You need the Member role to use this command.", ephemeral=True
+            )
+        elif isinstance(error, app_commands.NoPrivateMessage):
+            await interaction.response.send_message(
+                "This command can only be used in a server.", ephemeral=True
+            )
+        else:
+            raise error    
 async def setup(bot: commands.Bot) -> None:
     event_service = getattr(bot, "event_service", None)
 

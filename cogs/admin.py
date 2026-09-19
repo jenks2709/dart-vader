@@ -5,6 +5,7 @@ from discord import app_commands
 from discord.ext import commands
 
 from services.shutdown import shutdown_bot
+from utils.checks import is_admin
 
 logger = logging.getLogger(__name__)
 
@@ -17,6 +18,7 @@ class Admin(commands.Cog):
         name="shutdown",
         description="Safely shut down Dart Vader.",
     )
+    @is_admin()
     @app_commands.checks.has_permissions(administrator=True)
     async def shutdown(self, interaction: discord.Interaction) -> None:
         await interaction.response.send_message(
