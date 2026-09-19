@@ -172,7 +172,7 @@ dart-vader/
 | cogs      | Discord commands and interaction handlers |
 | services  | Society and business logic                |
 | database  | Database models and persistence           |
-| tests     | Automated tests                           |
+| tests     | Automated tests (to be added)             |
 | utils     | Shared helper functionality               |
 | config    | Configuration management                  |
 | data      | Static project data                       |
