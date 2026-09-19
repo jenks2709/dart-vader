@@ -35,6 +35,8 @@ def optional_integer(name: str) -> int | None:
 class Settings:
     discord_token: str
     guild_id: int | None
+    admin_role_id: int | None
+    member_role_id: int | None
     log_level: str
     timezone: str
 
@@ -42,6 +44,8 @@ class Settings:
 settings = Settings(
     discord_token=require_environment_variable("DISCORD_TOKEN"),
     guild_id=optional_integer("GUILD_ID"),
+    admin_role_id=optional_integer("ADMIN_ROLE_ID"),
+    member_role_id=optional_integer("MEMBER_ROLE_ID"),
     log_level=os.getenv("LOG_LEVEL", "INFO").upper(),
     timezone=os.getenv("TIMEZONE", "Europe/London")
 )

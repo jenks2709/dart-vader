@@ -3,7 +3,7 @@ from discord import app_commands
 from discord.ext import commands
 
 from utils.logger import logger
-
+from utils.checks import is_admin
 
 class General(commands.Cog):
     """General member-facing commands."""
@@ -15,6 +15,7 @@ class General(commands.Cog):
         name="ping",
         description="Check whether Dart Vader is online.",
     )
+    @is_admin()
     async def ping(
         self,
         interaction: discord.Interaction,
@@ -57,16 +58,9 @@ class General(commands.Cog):
             description=(
                 "Dart Vader supports the day-to-day administration "
                 "of the Nerf society."
-            ),
-        )
-
-        embed.add_field(
-            name="Dart Vader",
-            value=(
                 "Events, attendance, roles, reminders and general "
                 "society administration."
             ),
-            inline=False,
         )
 
         embed.add_field(

@@ -76,7 +76,7 @@ class EventService:
         self,
         *,
         guild_id: int,
-        event_id: int,
+        event_id: str,
         title: str | None = None,
         description: str | None = None,
         location: str | None = None,
@@ -263,6 +263,7 @@ class EventService:
         self,
         *,
         guild_id: int,
+        event_id: str,
         title: str,
         description: str,
         location: str,
@@ -302,6 +303,7 @@ class EventService:
 
         return await self.repository.create(
             guild_id=guild_id,
+            event_id=event_id,
             title=title,
             description=description,
             location=location,

@@ -12,7 +12,7 @@ class EventStatus(str, Enum):
 
 @dataclass
 class Event:
-    id: int
+    id: str
     guild_id: int
     title: str
     description: str
