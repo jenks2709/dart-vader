@@ -19,3 +19,13 @@ class EventSignup:
     signup_time: datetime
     updated_at: datetime
     notes: str | None = None
+
+@dataclass
+class EventSignupWithMember:
+    discord_id: int
+    status: EventSignupStatus
+    signup_time: datetime
+    notes: str | None = None
+    first_name: str | None = None
+    last_name: str | None = None
+    display_name: str | None = None

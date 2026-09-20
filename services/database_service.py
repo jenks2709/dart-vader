@@ -34,7 +34,7 @@ class DatabaseService:
 
         await self.connection.execute("""
             CREATE TABLE IF NOT EXISTS event_signups (
-                event_id TEXT NOT NULL UNIQUE,
+                event_id TEXT NOT NULL,
                 discord_id INTEGER NOT NULL,
                 signup_status TEXT NOT NULL DEFAULT 'signed_up',
                 signup_time TEXT NOT NULL,
