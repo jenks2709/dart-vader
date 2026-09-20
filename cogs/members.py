@@ -1,8 +1,9 @@
+import io
 import discord
 from discord import app_commands
 from discord.ext import commands
 from config.settings import settings
-
+from utils.checks import is_admin
 from services.member_service import (
     MemberAlreadyRegisteredError,
     MemberService,
@@ -151,7 +152,48 @@ class Members(commands.Cog):
         )
 
         
+    @app_commands.command(
+        name="export-members",
+        description="Export the member list as a .txt file.",
+    )
+    @app_commands.guild_only()
+    @is_admin()
+    @app_commands.default_permissions(manage_guild=True)
+    async def export_members(
+        self,
+        interaction: discord.Interaction,
+    ) -> None:
+        await interaction.response.defer(ephemeral=True)
 
+        members = await self.member_service.list_members(
+            guild_id=interaction.guild_id,
+        )
+
+        if not members:
+            await interaction.followup.send(
+                "No members are registered yet.",
+                ephemeral=True,
+            )
+            return
+
+        lines = [
+            f"Registered members: {len(members)}",
+            "",
+        ]
+
+        for number, member in enumerate(members, start=1):
+            lines.append(
+                f"{number}. {member.first_name} {member.last_name} "
+                f"({member.display_name}) - Discord ID {member.discord_user_id}"
+            )
+
+        data = io.BytesIO("\n".join(lines).encode("utf-8"))
+
+        await interaction.followup.send(
+            "Here is the member list.",
+            file=discord.File(data, filename="members.txt"),
+            ephemeral=True,
+        )
 
     @register.error
     async def register_error(

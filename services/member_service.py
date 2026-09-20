@@ -33,3 +33,9 @@ class MemberService:
             last_name=last_name,
             display_name=display_name,
         )
+    async def list_members(
+        self,
+        *,
+        guild_id: int,
+    ) -> list[Member]:
+        return await self._repository.list_by_guild(guild_id=guild_id)

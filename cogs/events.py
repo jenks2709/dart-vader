@@ -1,3 +1,4 @@
+import io
 import discord
 from discord import app_commands
 from discord.ext import commands
@@ -1250,7 +1251,68 @@ class EventsCog(commands.Cog):
                 "This command can only be used in a server.", ephemeral=True
             )
         else:
-            raise error    
+            raise error  
+
+    @app_commands.command(
+        name="export-signups",
+        description="Export the signup list for an event as a .txt file.",
+    )
+    @app_commands.guild_only()
+    @is_admin()
+    @app_commands.default_permissions(manage_events=True)
+    async def export_signups(
+        self,
+        interaction: discord.Interaction,
+        event_id: str,
+    ) -> None:
+        event_id = event_id.strip()
+
+        await interaction.response.defer(ephemeral=True)
+
+        try:
+            signups = await self.event_service.list_event_signups_with_members(
+                guild_id=interaction.guild_id,
+                event_id=event_id,
+            )
+        except ValueError as error:
+            await interaction.followup.send(str(error), ephemeral=True)
+            return
+
+        if not signups:
+            await interaction.followup.send(
+                "Nobody has signed up for this event yet.",
+                ephemeral=True,
+            )
+            return
+
+        lines = [
+            f"Signups for event {event_id}",
+            f"Total: {len(signups)}",
+            "",
+        ]
+
+        for number, signup in enumerate(signups, start=1):
+            if signup.first_name and signup.last_name:
+                name = f"{signup.first_name} {signup.last_name}"
+            elif signup.display_name:
+                name = signup.display_name
+            else:
+                name = f"Unregistered ({signup.discord_id})"
+
+            line = f"{number}. {name} [{signup.status.value}]"
+
+            if signup.notes:
+                line += f" - {signup.notes}"
+
+            lines.append(line)
+
+        data = io.BytesIO("\n".join(lines).encode("utf-8"))
+
+        await interaction.followup.send(
+            "Here is the signup list.",
+            file=discord.File(data, filename=f"signups_{event_id}.txt"),
+            ephemeral=True,
+        )
 async def setup(bot: commands.Bot) -> None:
     event_service = getattr(bot, "event_service", None)
 

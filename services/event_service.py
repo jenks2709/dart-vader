@@ -2,7 +2,7 @@ from datetime import datetime
 
 from models.event import Event, EventStatus
 from repositories.event_repository import EventRepository
-
+from models.event_signup import EventSignupWithMember
 
 class InvalidEventError(Exception):
     pass
@@ -81,10 +81,6 @@ class EventService:
         signup_deadline: datetime | None = None,
         maximum_attendees: int | None = None,
     ) -> Event:
-        if event_id <= 0:
-            raise InvalidEventError(
-                "The event ID must be greater than zero."
-            )
 
         event = await self.repository.get_by_id(
             guild_id=guild_id,
@@ -168,8 +164,8 @@ class EventService:
             )
 
         updated_event = Event(
-            id=event.id,
             guild_id=event.guild_id,
+            event_id=event.event_id,
             title=updated_title,
             description=updated_description,
             location=updated_location,
@@ -359,3 +355,13 @@ class EventService:
             )
         except ValueError as error:
             raise InvalidEventError(str(error)) from error
+    async def list_event_signups_with_members(
+        self,
+        *,
+        guild_id: int,
+        event_id: str,
+    ) -> list[EventSignupWithMember]:
+        return await self.repository.list_signups_with_members(
+            guild_id=guild_id,
+            event_id=event_id,
+        )

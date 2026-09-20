@@ -2,7 +2,7 @@ from datetime import datetime
 
 from models.event import Event, EventStatus
 from services.database_service import DatabaseService
-from models.event_signup import EventSignup, EventSignupStatus
+from models.event_signup import EventSignup, EventSignupStatus, EventSignupWithMember
 
 class EventRepository:
     def __init__(self, database: DatabaseService) -> None:
@@ -417,7 +417,7 @@ class EventRepository:
                 event.status.value,
                 updated_at.isoformat(),
                 event.guild_id,
-                event.event_idid,
+                event.event_id,
             ),
         )
 
@@ -698,6 +698,56 @@ class EventRepository:
                 signup_time=datetime.fromisoformat(row["signup_time"]),
                 updated_at=datetime.fromisoformat(row["updated_at"]),
                 notes=row["notes"],
+            )
+            for row in rows
+        ]
+    async def list_signups_with_members(
+        self,
+        *,
+        guild_id: int,
+        event_id: str,
+    ) -> list[EventSignupWithMember]:
+        event = await self.get_by_id(guild_id=guild_id, event_id=event_id)
+
+        if event is None:
+            raise ValueError("Event not found.")
+
+        cursor = await self.database.execute(
+            """
+            SELECT
+                s.discord_id,
+                s.signup_status,
+                s.signup_time,
+                s.notes,
+                m.first_name,
+                m.last_name,
+                m.display_name
+            FROM event_signups AS s
+            LEFT JOIN members AS m
+                ON m.discord_user_id = s.discord_id
+                AND m.guild_id = ?
+            WHERE s.event_id = ?
+            AND s.signup_status != ?
+            ORDER BY s.signup_time ASC
+            """,
+            (
+                guild_id,
+                event_id,
+                EventSignupStatus.CANCELLED.value,
+            ),
+        )
+
+        rows = await cursor.fetchall()
+
+        return [
+            EventSignupWithMember(
+                discord_id=row["discord_id"],
+                status=EventSignupStatus(row["signup_status"]),
+                signup_time=datetime.fromisoformat(row["signup_time"]),
+                notes=row["notes"],
+                first_name=row["first_name"],
+                last_name=row["last_name"],
+                display_name=row["display_name"],
             )
             for row in rows
         ]
