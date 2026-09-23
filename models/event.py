@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
@@ -24,4 +25,32 @@ class Event:
     status: EventStatus
     created_by_discord_id: int
     created_at: datetime
+=======
+from dataclasses import dataclass
+from datetime import datetime
+from enum import Enum
+
+
+class EventStatus(str, Enum):
+    DRAFT = "draft"
+    SCHEDULED = "scheduled"
+    CANCELLED = "cancelled"
+    COMPLETED = "completed"
+
+
+@dataclass
+class Event:
+    guild_id: int
+    event_id: str
+    title: str
+    description: str
+    location: str
+    start_time: datetime
+    end_time: datetime | None
+    signup_deadline: datetime | None
+    maximum_attendees: int | None
+    status: EventStatus
+    created_by_discord_id: int
+    created_at: datetime
+>>>>>>> 70ee258 (Connecting traspberry pi and fix minor version compatability issues)
     updated_at: datetime
