@@ -3003,3 +3003,110 @@ AttributeError: 'Event' object has no attribute 'event_idid'. Did you mean: 'eve
 2026-09-24 00:26:25,671 | INFO | dart_vader | Synchronised 18 commands to development guild 499335861289091073
 2026-09-24 00:26:28,199 | INFO | dart_vader | Dart Vader is online as Dart Vader#1257 (1525131195505971241)
 2026-09-24 00:27:32,169 | INFO | dart_vader | Received interaction: type=InteractionType.application_command name=export-members user=613851811543122037 guild=499335861289091073
+2026-10-04 14:20:34,901 | INFO | dart_vader | Loaded extension: cogs.general
+2026-10-04 14:20:34,914 | INFO | dart_vader | Loaded extension: cogs.admin
+2026-10-04 14:20:34,925 | INFO | dart_vader | Loaded extension: cogs.members
+2026-10-04 14:20:35,038 | INFO | dart_vader | Loaded extension: cogs.events
+2026-10-04 14:20:35,250 | INFO | dart_vader | Synced command: /ping | application ID: 1525131195505971241
+2026-10-04 14:20:35,250 | INFO | dart_vader | Synced command: /vader | application ID: 1525131195505971241
+2026-10-04 14:20:35,250 | INFO | dart_vader | Synced command: /about | application ID: 1525131195505971241
+2026-10-04 14:20:35,251 | INFO | dart_vader | Synced command: /shutdown | application ID: 1525131195505971241
+2026-10-04 14:20:35,251 | INFO | dart_vader | Synced command: /register | application ID: 1525131195505971241
+2026-10-04 14:20:35,251 | INFO | dart_vader | Synced command: /export-members | application ID: 1525131195505971241
+2026-10-04 14:20:35,252 | INFO | dart_vader | Synced command: /event-signups | application ID: 1525131195505971241
+2026-10-04 14:20:35,252 | INFO | dart_vader | Synced command: /events | application ID: 1525131195505971241
+2026-10-04 14:20:35,252 | INFO | dart_vader | Synced command: /create-event | application ID: 1525131195505971241
+2026-10-04 14:20:35,252 | INFO | dart_vader | Synced command: /edit-event | application ID: 1525131195505971241
+2026-10-04 14:20:35,253 | INFO | dart_vader | Synced command: /specific-event | application ID: 1525131195505971241
+2026-10-04 14:20:35,253 | INFO | dart_vader | Synced command: /delete-event | application ID: 1525131195505971241
+2026-10-04 14:20:35,253 | INFO | dart_vader | Synced command: /signup-event | application ID: 1525131195505971241
+2026-10-04 14:20:35,253 | INFO | dart_vader | Synced command: /withdraw-event | application ID: 1525131195505971241
+2026-10-04 14:20:35,253 | INFO | dart_vader | Synced command: /register-attendance | application ID: 1525131195505971241
+2026-10-04 14:20:35,254 | INFO | dart_vader | Synced command: /announce-event | application ID: 1525131195505971241
+2026-10-04 14:20:35,254 | INFO | dart_vader | Synced command: /remind-event | application ID: 1525131195505971241
+2026-10-04 14:20:35,254 | INFO | dart_vader | Synced command: /export-signups | application ID: 1525131195505971241
+2026-10-04 14:20:35,254 | INFO | dart_vader | Synchronised 18 commands to development guild 499335861289091073
+2026-10-04 14:20:37,679 | INFO | dart_vader | Dart Vader is online as Dart Vader#1257 (1525131195505971241)
+2026-10-04 14:20:47,842 | INFO | dart_vader | Received interaction: type=InteractionType.application_command name=ping user=613851811543122037 guild=499335861289091073
+2026-10-04 14:21:06,758 | INFO | dart_vader | Received interaction: type=InteractionType.application_command name=ping user=613851811543122037 guild=499335861289091073
+2026-10-04 14:21:48,095 | INFO | dart_vader | Dart Vader has shut down.
+2026-10-04 14:21:50,682 | INFO | dart_vader | Loaded extension: cogs.general
+2026-10-04 14:21:50,687 | INFO | dart_vader | Loaded extension: cogs.admin
+2026-10-04 14:21:50,689 | INFO | dart_vader | Loaded extension: cogs.members
+2026-10-04 14:21:50,727 | INFO | dart_vader | Loaded extension: cogs.events
+2026-10-04 14:21:50,981 | INFO | dart_vader | Synced command: /ping | application ID: 1525131195505971241
+2026-10-04 14:21:50,981 | INFO | dart_vader | Synced command: /vader | application ID: 1525131195505971241
+2026-10-04 14:21:50,981 | INFO | dart_vader | Synced command: /about | application ID: 1525131195505971241
+2026-10-04 14:21:50,981 | INFO | dart_vader | Synced command: /shutdown | application ID: 1525131195505971241
+2026-10-04 14:21:50,982 | INFO | dart_vader | Synced command: /register | application ID: 1525131195505971241
+2026-10-04 14:21:50,982 | INFO | dart_vader | Synced command: /export-members | application ID: 1525131195505971241
+2026-10-04 14:21:50,982 | INFO | dart_vader | Synced command: /event-signups | application ID: 1525131195505971241
+2026-10-04 14:21:50,982 | INFO | dart_vader | Synced command: /events | application ID: 1525131195505971241
+2026-10-04 14:21:50,983 | INFO | dart_vader | Synced command: /create-event | application ID: 1525131195505971241
+2026-10-04 14:21:50,983 | INFO | dart_vader | Synced command: /edit-event | application ID: 1525131195505971241
+2026-10-04 14:21:50,983 | INFO | dart_vader | Synced command: /specific-event | application ID: 1525131195505971241
+2026-10-04 14:21:50,984 | INFO | dart_vader | Synced command: /delete-event | application ID: 1525131195505971241
+2026-10-04 14:21:50,984 | INFO | dart_vader | Synced command: /signup-event | application ID: 1525131195505971241
+2026-10-04 14:21:50,984 | INFO | dart_vader | Synced command: /withdraw-event | application ID: 1525131195505971241
+2026-10-04 14:21:50,985 | INFO | dart_vader | Synced command: /register-attendance | application ID: 1525131195505971241
+2026-10-04 14:21:50,985 | INFO | dart_vader | Synced command: /announce-event | application ID: 1525131195505971241
+2026-10-04 14:21:50,985 | INFO | dart_vader | Synced command: /remind-event | application ID: 1525131195505971241
+2026-10-04 14:21:50,985 | INFO | dart_vader | Synced command: /export-signups | application ID: 1525131195505971241
+2026-10-04 14:21:50,985 | INFO | dart_vader | Synchronised 18 commands to development guild 499335861289091073
+2026-10-04 14:21:53,630 | INFO | dart_vader | Dart Vader is online as Dart Vader#1257 (1525131195505971241)
+2026-10-04 14:21:59,847 | INFO | dart_vader | Received interaction: type=InteractionType.application_command name=ping user=613851811543122037 guild=499335861289091073
+2026-10-04 14:22:39,567 | INFO | dart_vader | Dart Vader has shut down.
+2026-10-04 14:22:43,438 | INFO | dart_vader | Loaded extension: cogs.general
+2026-10-04 14:22:43,441 | INFO | dart_vader | Loaded extension: cogs.admin
+2026-10-04 14:22:43,444 | INFO | dart_vader | Loaded extension: cogs.members
+2026-10-04 14:22:43,477 | INFO | dart_vader | Loaded extension: cogs.events
+2026-10-04 14:22:43,664 | INFO | dart_vader | Synced command: /ping | application ID: 1525131195505971241
+2026-10-04 14:22:43,665 | INFO | dart_vader | Synced command: /vader | application ID: 1525131195505971241
+2026-10-04 14:22:43,666 | INFO | dart_vader | Synced command: /about | application ID: 1525131195505971241
+2026-10-04 14:22:43,667 | INFO | dart_vader | Synced command: /shutdown | application ID: 1525131195505971241
+2026-10-04 14:22:43,667 | INFO | dart_vader | Synced command: /register | application ID: 1525131195505971241
+2026-10-04 14:22:43,667 | INFO | dart_vader | Synced command: /export-members | application ID: 1525131195505971241
+2026-10-04 14:22:43,667 | INFO | dart_vader | Synced command: /event-signups | application ID: 1525131195505971241
+2026-10-04 14:22:43,668 | INFO | dart_vader | Synced command: /events | application ID: 1525131195505971241
+2026-10-04 14:22:43,668 | INFO | dart_vader | Synced command: /create-event | application ID: 1525131195505971241
+2026-10-04 14:22:43,668 | INFO | dart_vader | Synced command: /edit-event | application ID: 1525131195505971241
+2026-10-04 14:22:43,668 | INFO | dart_vader | Synced command: /specific-event | application ID: 1525131195505971241
+2026-10-04 14:22:43,669 | INFO | dart_vader | Synced command: /delete-event | application ID: 1525131195505971241
+2026-10-04 14:22:43,669 | INFO | dart_vader | Synced command: /signup-event | application ID: 1525131195505971241
+2026-10-04 14:22:43,669 | INFO | dart_vader | Synced command: /withdraw-event | application ID: 1525131195505971241
+2026-10-04 14:22:43,669 | INFO | dart_vader | Synced command: /register-attendance | application ID: 1525131195505971241
+2026-10-04 14:22:43,669 | INFO | dart_vader | Synced command: /announce-event | application ID: 1525131195505971241
+2026-10-04 14:22:43,669 | INFO | dart_vader | Synced command: /remind-event | application ID: 1525131195505971241
+2026-10-04 14:22:43,670 | INFO | dart_vader | Synced command: /export-signups | application ID: 1525131195505971241
+2026-10-04 14:22:43,670 | INFO | dart_vader | Synchronised 18 commands to development guild 499335861289091073
+2026-10-04 14:22:46,069 | INFO | dart_vader | Dart Vader is online as Dart Vader#1257 (1525131195505971241)
+2026-10-04 14:23:15,426 | INFO | dart_vader | Received interaction: type=InteractionType.application_command name=ping user=613851811543122037 guild=499335861289091073
+2026-10-04 14:24:55,358 | INFO | dart_vader | Dart Vader has shut down.
+2026-10-04 14:24:57,696 | INFO | dart_vader | Loaded extension: cogs.general
+2026-10-04 14:24:57,701 | INFO | dart_vader | Loaded extension: cogs.admin
+2026-10-04 14:24:57,704 | INFO | dart_vader | Loaded extension: cogs.members
+2026-10-04 14:24:57,741 | INFO | dart_vader | Loaded extension: cogs.events
+2026-10-04 14:24:57,928 | INFO | dart_vader | Synced command: /ping | application ID: 1525131195505971241
+2026-10-04 14:24:57,928 | INFO | dart_vader | Synced command: /vader | application ID: 1525131195505971241
+2026-10-04 14:24:57,928 | INFO | dart_vader | Synced command: /about | application ID: 1525131195505971241
+2026-10-04 14:24:57,929 | INFO | dart_vader | Synced command: /shutdown | application ID: 1525131195505971241
+2026-10-04 14:24:57,929 | INFO | dart_vader | Synced command: /register | application ID: 1525131195505971241
+2026-10-04 14:24:57,929 | INFO | dart_vader | Synced command: /export-members | application ID: 1525131195505971241
+2026-10-04 14:24:57,929 | INFO | dart_vader | Synced command: /event-signups | application ID: 1525131195505971241
+2026-10-04 14:24:57,930 | INFO | dart_vader | Synced command: /events | application ID: 1525131195505971241
+2026-10-04 14:24:57,930 | INFO | dart_vader | Synced command: /create-event | application ID: 1525131195505971241
+2026-10-04 14:24:57,930 | INFO | dart_vader | Synced command: /edit-event | application ID: 1525131195505971241
+2026-10-04 14:24:57,931 | INFO | dart_vader | Synced command: /specific-event | application ID: 1525131195505971241
+2026-10-04 14:24:57,933 | INFO | dart_vader | Synced command: /delete-event | application ID: 1525131195505971241
+2026-10-04 14:24:57,933 | INFO | dart_vader | Synced command: /signup-event | application ID: 1525131195505971241
+2026-10-04 14:24:57,934 | INFO | dart_vader | Synced command: /withdraw-event | application ID: 1525131195505971241
+2026-10-04 14:24:57,934 | INFO | dart_vader | Synced command: /register-attendance | application ID: 1525131195505971241
+2026-10-04 14:24:57,934 | INFO | dart_vader | Synced command: /announce-event | application ID: 1525131195505971241
+2026-10-04 14:24:57,934 | INFO | dart_vader | Synced command: /remind-event | application ID: 1525131195505971241
+2026-10-04 14:24:57,934 | INFO | dart_vader | Synced command: /export-signups | application ID: 1525131195505971241
+2026-10-04 14:24:57,935 | INFO | dart_vader | Synchronised 18 commands to development guild 499335861289091073
+2026-10-04 14:25:00,364 | INFO | dart_vader | Dart Vader is online as Dart Vader#1257 (1525131195505971241)
+2026-10-04 14:25:03,580 | INFO | dart_vader | Ping command used by user 613851811543122037 in guild 499335861289091073
+2026-10-04 14:25:03,581 | INFO | dart_vader | Received interaction: type=InteractionType.application_command name=ping user=613851811543122037 guild=499335861289091073
+2026-10-04 14:25:26,575 | INFO | dart_vader | Received interaction: type=InteractionType.application_command name=register user=613851811543122037 guild=499335861289091073
+2026-10-04 14:25:57,404 | INFO | dart_vader | Dart Vader has shut down.
